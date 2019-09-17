@@ -1,0 +1,131 @@
+---
+title: "Lab2_560"
+output: html_document
+author: Allen Church
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Name: Allen Church
+
+Chapter 2 Lab Cover Sheet
+
+First load the lab in post_open_refine_clean.dta
+load necessary packages
+```{r}
+library(haven)
+```
+
+set working directory (use the path where you saved the file post_open_refine_clean.dta)
+For example: here is the folder where I store my lab for this class
+
+load lab
+
+```{r}
+lab <- read_dta("Ch2_lab_survey_lab.dta")
+```
+
+The codebook for this lab is Codebook for EXIT POLL  survey.docx
+
+1)	Use the following to create dummy variables for Arlington and Prince William Counties.  How many observations are from each county?
+Exercise: convert this Stata code to R code
+
+```{r}
+lab$Arlington <- (
+  lab$precinct == "AR49" | lab$precinct == "AR22" | lab$precinct == "AR2" |
+  lab$precinct == "AR18" | lab$precinct == "41" | lab$precinct == "16" |
+  lab$precinct == "4" | lab$precinct == "17" | (lab$precinct == "2" &
+    
+lab$state == 4& !is.na(lab$state))|
+  lab$precinct == "31" | lab$precinct == "48")
+
+#count observations from each county
+table(lab$Arlington)
+```
+
+
+gen Arlington 		= (precinct == "AR49" | precinct == "AR22" | precinct == "AR2" | precinct == "AR18" | precinct == "41" | /*
+*/  precinct == "16" | precinct == "4"   | precinct == "17" | (precinct == "2" & state == 4) | precinct == "31" | precinct == "48" )
+
+gen PrinceWilliam 	= (precinct == "PW 101" | precinct == "PW 104" |  precinct == "PW 401" | precinct == "PW101" | /* 
+ 	*/ precinct == "PW104" |precinct == "PW402"  |precinct == "PW406"  | precinct == "401" | precinct == "402"  |  /* 
+ */  (precinct == "104" & state == 4)	)
+
+
+2)	Create dummy variables for each state/DC.  How many observations are in DC, Maryland, Ohio and Virginia?
+
+```{r}
+lab$DC <- (lab$state ==1)
+```
+
+
+
+
+3)	Convert the year_born variable into age.  Be sure to check for and correct for lab errors.  What is the average age of all observations in the lab set?  The minimum and maximum?
+
+```{r}
+lab$age[lab$year_born <= 1920] <- NA
+lab$age[lab$year_born > 2016] <- NA
+summary(lab$age)
+View(lab)
+```
+
+
+
+
+4)	What is the distribution of the gender variable?  Create a male dummy variable and indicate the distribution of this variable. Compare distribution of your male variable to the distribution of the gender variable.
+
+```{r}
+lab$male <- (lab$gender == 1)
+lab$female <- (lab$gender == 2)
+table(lab$male)
+table(lab$gender)
+
+```
+
+
+
+
+5)	Provide descriptive stats for Trump and Clinton feeling thermometer.  Is there anything you need to adjust?
+
+```{r}
+summary(lab$therm_clinton)
+summary(lab$therm_trump)
+
+lab$therm_clinton[lab$therm_clinton > 100] <- NA
+summary(lab$therm_clinton)
+
+
+```
+
+
+
+6)	What is the distribution of the education variable?  Is there any adjustment you would need to make if you will use this as a continuous variable in a regression model?
+
+
+```{r}
+table(lab$education)
+
+lab$education[lab$education == 4] <- NA
+lab$education[lab$education == 5] <- 4
+lab$education[lab$education == 6] <- 5
+lab$education[lab$education == 7] <- 6
+
+table(lab$education)
+```
+
+
+
+
+
+## Including Plots
+```{r}
+library(haven)
+```
+
+```{r}
+summary(lab)
+```
+
