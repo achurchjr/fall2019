@@ -1,0 +1,143 @@
+---
+title: "Chapter 2 Lab"
+author: "Allen Church"
+output:
+  pdf_document: default
+  word_document: default
+  html_document: default
+---
+Load necessary packages
+```{r}
+library(haven)
+```
+
+Set working directory and load lab data
+```{r}
+lab <- read_dta("Ch2_lab_survey_data.dta")
+```
+
+
+1)	Use the following to create dummy variables for Arlington and Prince William Counties.  How many observations are from each county?
+
+```{r}
+
+#Create dummy variable for Arlington county, selecting corresponding precinct codes with OR operators
+lab$Arlington <- (
+  lab$precinct == "AR49" | lab$precinct == "AR22" | lab$precinct == "AR2" |
+  lab$precinct == "AR18" | lab$precinct == "41" | lab$precinct == "16" |
+  lab$precinct == "4" | lab$precinct == "17" | (lab$precinct == "2" &
+    
+lab$state == 4& !is.na(lab$state))|
+  lab$precinct == "31" | lab$precinct == "48")
+
+#Count observations from each county, in this case TRUE corresponds to Arlington
+table(lab$Arlington)
+```
+
+```{r}
+#Create dummy variable for Prince William county, selecting corresponding precinct codes with OR operators
+lab$PrinceWilliam1 <- (
+  lab$precinct == "PW 101" | lab$precinct == "PW 104" |  lab$precinct == "PW 401" | lab$precinct == "PW101" |
+  lab$precinct == "PW104" | lab$precinct == "PW402" | lab$precinct == "PW406"  | lab$precinct == "401" | lab$precinct == "402" | 
+(lab$precinct == "104" & lab$state == 4)	)
+
+#Count observations from each county, in this case TRUE corresponds to Prince William
+table(lab$PrinceWilliam1)
+```
+
+2)	Create dummy variables for each state/DC.  How many observations are in DC, Maryland, Ohio and Virginia?
+
+```{r}
+#Create dummy variables for each state
+lab$DC <- (lab$state == 1)
+lab$Maryland <- (lab$state == 2)
+lab$Ohio <- (lab$state == 3)
+lab$Virginia <- (lab$state == 4)
+
+#Tabulate observations for each state
+table(lab$state)
+```
+
+3)	Convert the year_born variable into age.  Be sure to check for and correct for lab errors.  What is the average age of all observations in the lab set?  The minimum and maximum?
+
+```{r}
+#Since the survey was taken in 2016, subtract 2016 - year born to obtain age
+#Create new age column
+lab$age <- 2016 - lab$year_born
+
+#The first summary of the age column shows there is a max age of 152 and 482 NA rows
+summary(lab$age)
+```
+
+```{r}
+#Subset the lab dataframe and exclude values where age is above 100
+newdata <- subset(lab, age < 100)
+
+#The summary of the newdata age column shows a new maximum of 95, which is possible
+summary(newdata$age)
+```
+
+4)	What is the distribution of the gender variable?  Create a male dummy variable and indicate the distribution of this variable. Compare distribution of your male variable to the distribution of the gender variable.
+
+```{r}
+#Create male and female variables
+lab$male <- (lab$gender == 1)
+lab$female <- (lab$gender == 2)
+```
+
+Distribution of male variable
+```{r}
+table(lab$male)
+```
+
+Distribution of gender variable. The below table shows that 5 respondents did not identify with the binary gender definition
+```{r}
+table(lab$gender)
+```
+
+
+5)	Provide descriptive stats for Trump and Clinton feeling thermometer.  Is there anything you need to adjust?
+
+```{r}
+#Summarize Clinton feeling thermometer, see there is a max of 200
+summary(lab$therm_clinton)
+```
+
+```{r}
+#Turn values over 100 into NA and summarize again
+lab$therm_clinton[lab$therm_clinton > 100] <- NA
+summary(lab$therm_clinton)
+```
+
+
+```{r}
+#Summarize Trump feeling thermometer
+summary(lab$therm_trump)
+```
+
+6)	What is the distribution of the education variable?  Is there any adjustment you would need to make if you will use this as a continuous variable in a regression model?
+
+```{r}
+#Below shows 7 values for education question
+lab1 <- read_dta("Ch2_lab_survey_data.dta")
+table(lab1$education)
+```
+
+```{r}
+#Below we adjust education to exclude the Other response in answer 4, and re-assign the other responses accordingly
+#Additionally, the Other response only had 11 values
+lab1$education[lab1$education == 4] <- NA
+lab1$education[lab1$education == 5] <- 4
+lab1$education[lab1$education == 6] <- 5
+lab1$education[lab1$education == 7] <- 6
+
+#Generate a new summary table
+table(lab1$education)
+```
+
+```{r}
+#A quick histogram to show the distribution of education
+#Below (as well as the table above) shows a low number of responses from 1 - Some high school, which could indicate a bias in sampling, or simply reflect the education of the sample.
+hist(lab1$education)
+```
+
