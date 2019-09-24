@@ -1,0 +1,85 @@
+---
+title: "Chapter 3 Exercise 4"
+author: "Allen Church"
+date: "September 24, 2019"
+output:
+  word_document: default
+  html_document: default
+---
+4a. For each data set (women and men), create scatterplot of hours worked on y axis and divorce rates on x axis
+
+```{r}
+#Load datasets and view
+load("C:/Users/WB537822/Desktop/stats1/Ch3_Exercise4_Divorce_rates_Women.RData")
+load("C:/Users/WB537822/Desktop/stats1/Ch3_Exercise4_Divorce_rates_Men.RData")
+
+View(Mdata)
+View(Wdata)
+```
+
+Scatterplot for women dataset
+```{r}
+plot(Wdata$divorcerate, Wdata$hours, main="Scatterplot of Female Divorce Rate vs. Hours Worked",
+     xlab="Divorce Rate", ylab = "Hours Worked", pch=9)
+```
+
+Scatterplot for men dataset
+
+```{r}
+plot(Mdata$divorcerate, Mdata$hours, main="Scatterplot of Male Divorce Rate vs. Hours Worked",
+     xlab="Divorce Rate", ylab = "Hours Worked", pch=9)
+```
+
+4b. For each data set estimate OLS regression in which hours worked is regressed on divorce rates. Report estimated regression equation and interpret coefficients. Explain differences in coefficients.
+
+Women dataset OLS regression: The formula for this regression is the dependent variable = hours worked and the independent variable = divorce rate.
+```{r}
+#Create OLS regression for women dataset
+ols_women <- lm(Wdata$hours ~ Wdata$divorcerate)
+summary(ols_women)
+```
+
+Men dataset OLS regression: The formula for this regression is the dependent variable = hours worked and the independent variable = divorce rate.
+```{r}
+#Create OLS regression for men dataset
+ols_men <- lm(Mdata$hours ~ Mdata$divorcerate)
+summary(ols_men)
+```
+
+The results between the two datasets above suggest that, since the beta hat 1 for women is 48.28 vs. beta hat 1 for men is 1.798, hours worked and divorce rate have a much higher positive correlation for women.
+
+4c. What are fitted value and residual for men in Germany?
+```{r}
+#Create a new dataframe only containing men data from Germany
+german_men <- subset(Mdata, country == "Germany")
+```
+
+Fitted value for men in Germany
+```{r}
+ols_german_men <- lm(german_men$hours ~ german_men$divorcerate)
+ols_german_men$fitted.values
+```
+
+Residual for men in Germany
+```{r}
+summary(ols_german_men)
+```
+The results above show there are 0 residuals for men in Germany.
+
+4d. Fitted value and residual for women in Spain
+```{r}
+#Create a new dataframe only containing women data from Spain
+spanish_women <- subset(Wdata, country == "Spain")
+ols_spanish_women <- lm(spanish_women$hours ~ spanish_women$divorcerate)
+```
+
+Fitted value for women in Spain
+```{r}
+ols_spanish_women$fitted.values
+```
+
+Residual for women in Spain
+```{r}
+summary(ols_spanish_women)
+```
+The results above show there are 0 residuals for women in Spain.

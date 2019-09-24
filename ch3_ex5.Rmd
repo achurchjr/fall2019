@@ -1,0 +1,77 @@
+---
+title: "Chapter 3 Exercise 5"
+author: "Allen Church"
+date: "September 24, 2019"
+output:
+  word_document: default
+  html_document: default
+---
+
+```{r}
+#Load datasets and view
+load("C:/Users/WB537822/Desktop/stats1/Ch3_Exercise4_Divorce_rates_Women.RData")
+load("C:/Users/WB537822/Desktop/stats1/Ch3_Exercise4_Divorce_rates_Men.RData")
+```
+
+5a. For each data set (women and men), create scatterplot of hours worked on y axis and tax rates on x axis.
+
+Scatterplot for women dataset
+```{r}
+plot(Wdata$taxrate, Wdata$hours, main="Scatterplot of Female Tax Rates vs. Hours Worked",
+     xlab="Tax Rate", ylab = "Hours Worked", pch=9)
+```
+
+Scatterplot for men dataset
+```{r}
+plot(Mdata$taxrate, Mdata$hours, main="Scatterplot of Male Tax Rates vs. Hours Worked",
+     xlab="Tax Rate", ylab = "Hours Worked", pch=9)
+```
+
+5b. For each dataset, set estimate an OLS regression in which hours worked is regressed on tax rates. Report the estimated regression equation and interpret coefficients. Explain any differences in coefficients.
+
+Regression for women dataset. The formula for this regression is the dependent variable = hours worked and the independent variable = tax rate.
+```{r}
+ols_tax_female <- lm(Wdata$hours ~ Wdata$taxrate)
+summary(ols_tax_female)
+```
+
+Regression for men dataset. The formula for this regression is the dependent variable = hours worked and the independent variable = tax rate.
+```{r}
+ols_tax_male <- lm(Mdata$hours ~ Mdata$taxrate)
+summary(ols_tax_male)
+```
+
+The value for beta hat 1 for women (53.46) estimates that for each additional hour worked, the tax rate increases by 53.46. The value for beta hat 1 for men (-1122.4) estimates that for each additional hour worked, the tax rate decreases by -1122.4. As seen above, there is a difference of 1175.86 between the beta hat 1 for women vs. men. This suggests that as men work more hours, their tax rate significantly decreases. On the other hand, the model suggests that as women work more hours, their tax rate increases.
+
+5c. Fitted value and residual for men in U.S.
+```{r}
+us_men <- subset(Mdata, country == "United States")
+ols_us_men <- lm(us_men$hours ~ us_men$taxrate)
+```
+
+Fitted value for men in U.S.
+```{r}
+ols_us_men$fitted.values
+```
+
+Residual for men in U.S.
+```{r}
+summary(ols_us_men)
+```
+
+5d. Fitted value and residual for women in Italy
+```{r}
+italy_women <- subset(Wdata, country == "Italy")
+ols_italy_women <- lm(italy_women$hours ~ italy_women$taxrate)
+
+```
+
+Fitted value for women in Italy
+```{r}
+ols_italy_women$fitted.values
+```
+
+Residual for women in Italy
+```{r}
+summary(ols_us_men)
+```
