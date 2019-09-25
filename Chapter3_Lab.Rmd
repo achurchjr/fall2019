@@ -1,0 +1,207 @@
+---
+title: "Chapter 3 Lab"
+author: Allen Church
+date: 'September 25, 2019'
+output:
+  word_document: default
+  pdf_document: default
+  html_document: default
+---
+
+Prepare packages and load data
+```{r setup, include=TRUE, message = FALSE, warning = FALSE}
+require(knitr)
+require(haven)
+require(AER)
+
+opts_chunk$set(echo = TRUE)
+options(digits = 3)
+
+#Add working directory, assign data to lab variable
+lab <- read_dta("Ch2_lab_survey_data.dta")
+```
+
+#### 1)	Estimate a regression model explaining Trump feeling thermometer as a function of education.
+#### (a)	What is the slope coefficient? Briefly explain what this coefficient means.  
+
+```{r tidy = FALSE}
+#Set y variable to therm_trump column, and set x variable to education column
+y=lab$therm_trump
+x=lab$education
+
+#Run linear model with therm_trump as dependent variable (y), education as independent variable (x) and summarize results
+results1 <- lm(y~x, data = lab)
+summary(results1)
+```
+The slope coefficient above is -3.038, meaning that education is negatively correlated with the Trump thermometer. Specifically, for every increase in unit of education, the Trump thermometer decreases by -3.038.
+
+#### (b) Estimate the model with robust standard errors and explain similarities and differences from results in part (a).
+```{r tidy = FALSE}
+#Perform tests of estimated coefficients and specify heteroskedasticity-consistent estimation of the covariance matrix
+coeftest(results1, vcov. = vcovHC(results1,type="HC1"))
+```
+
+In the model above, estimating using robust standard errors produces the same intercept and Beta hat 1. However, there are higher values for standard errors and t values. The model above produces a higher standard error, meaning that the model fits less precisely with the previous model, since the standard error of the regression corresponds to average distance of observations from fitted values.
+
+#### 2)	For the fourth observation:  What is
+#### (a) the value of education
+
+```{r tidy = FALSE}
+#Isolate education column in lab and select fourth observation
+lab$education[4]
+```
+
+#### (b) the fitted value
+
+```{r tidy = FALSE}
+#Use predict function which predicts values based on linear model stored in results1
+#Select fourth observation from the model
+predict(results1)[[4]]
+```
+#### (c) the actual therm_trump value
+```{r}
+#Select actual value from the therm_trump column, and select fourth value
+lab$therm_trump[4]
+```
+#### (d) the residual
+```{r}
+#Calculate the difference between the fitted value and the actual value
+#Select fourth observation from results1 linear model
+residuals(results1)[4]
+```
+
+#### 3)	Scatterplot the Trump feeling thermometer and education data. Add a fitted line from your regression. Use the jitter(2) subcommand when making the scatterplot. (If you are filling this lab sheet in by hand, you may simply produce a quick sketch what your output looks like.)
+
+Trump scatterplot before jitter
+```{r}
+#Create a plot specifying education on x-axis, Trump thermometer on y-axis, labels of axes and graph title
+plot(lab$education, lab$therm_trump,
+     type = "p",
+     pch = 20,
+     xlab = 'Education',
+     ylab = 'Trump Feeling Thermometer',
+     main = 'Scatterplot of Trump Feeling Thermometer and \n Education Data')
+
+#Add fitted line using regression results (results1)
+abline(a=coef(results1)[1], b=coef(results1)[2], col=2)
+```
+
+Trump scatterplot after jitter
+```{r}
+#Create a plot specifying education on x-axis, Trump thermometer on y-axis, labels of axes and graph title
+#Add jitter subcommand that adds random noise to plot and aids visualization
+plot(jitter(lab$education, 2), jitter(lab$therm_trump, 2),
+     type = "p",
+     pch = 20,
+     xlab = 'Education',
+     ylab = 'Trump Feeling Thermometer',
+     main = 'Relationship Between Trump Feeling Thermometer and \n Education Data')
+
+#Add fitted line using regression results (results1)
+abline(a=coef(results1)[1], b=coef(results1)[2], col=2)
+```
+#### 4)	Estimate a regression model explaining Clinton feeling thermometer as a function of education. What is the coefficient? Briefly explain what this model means.
+```{r tidy = FALSE}
+#Set y2 variable to therm_clinton column, and set x2 variable to education column
+y2 = lab$therm_clinton
+x2 = lab$education
+
+#Run linear model with therm_clinton as dependent variable (y2), education as independent variable (x2) and summarize results
+results2 <- lm(y2~x2, data = lab)
+summary(results2)
+```
+The slope coefficient from the model above is 2.090, meaning that education is positively correlated with the Clinton thermometer. Specifically, for every increase in unit of education, the Clinton thermometer increases by 2.090. One can infer from the observations that a higher level of education would indicate a higher favoring of Clinton.
+
+#### 5) Scatterplot the Clinton feeling thermometer and education data. Add a fitted line from your regression.  (If you are filling this lab sheet in by hand, you may simply produce a quick sketch what your output looks like.)
+
+Clinton scatterplot before jitter
+```{r}
+#Create a plot specifying education on x-axis, Clinton thermometer on y-axis, labels of axes and graph title
+plot(lab$education, lab$therm_clinton,
+     type = "p",
+     pch=20,
+     xlab= 'Education',
+     ylab= 'Clinton Feeling Thermometer',
+     main='Relationship Between Clinton Feeling Thermometer and \n Education Data')
+
+#Add fitted line using regression results (results2)
+abline(a=coef(results2)[1], b=coef(results2)[2], col=2)
+```
+
+Clinton scatterplot after jitter
+```{r}
+plot(jitter(lab$education, 2), jitter(lab$therm_clinton, 2),
+     type = "p",
+     pch = 20,
+     xlab = 'Education',
+     ylab = 'Clinton Feeling Thermometer',
+     main = 'Relationship Between Clinton Feeling Thermometer and \n Education Data')
+
+#Add fitted line using regression results (results1)
+abline(a=coef(results2)[1], b=coef(results2)[2], col=2)
+```
+
+#### 6)	Estimate a regression model explaining Clinton feeling thermometer as a function of education for the first 400 observations only. What is $\hat{\beta}_1$?   What is the standard error of $\hat{\beta}_1$^? Compare to results from the entire sample.
+```{r tidy = FALSE}
+#Create linear model as above, but only select rows 1-400 from lab dataset, and summarize results of linear model (results3)
+results3 <- lm(formula = therm_clinton ~ education, data=lab[1:400,])
+summary(results3)
+```
+The Beta hat 1 for the regression model above is now 2.42, which is a higher OLS estimator than the original value of 2.090 with the full dataset. The standard error, however, increases to 1.53, which is higher than the original value of 0.517 with the full dataset. Since the standard error increases, this implies that our second regression model with only 400 observations does not fit the data as well as our original regression model which contained 2359 observations.
+```{r}
+#Counting number of rows in original datset - used for answer above
+nrow(lab)
+```
+
+#### 7)	Estimate a regression model explaining Trump feeling thermometer as a function of education for Republicans only. Use robust standard errors.  What are the slope coefficient and t-statistic?
+
+```{r tidy = FALSE}
+#Create Republican dummy variable that specifies political party can equal 5, 6, or 7 (taken from survey book)
+lab$Rep <- (lab$pol_party == 5 | lab$pol_party == 6 | lab$pol_party == 7)
+
+#Run linear model with therm_trump as dependent variable, education as independent variable, and specify to select dummy Rep variable
+results4 <- lm(therm_trump ~ education, data=lab[lab$Rep==1,])
+
+#Use robust standard errors and display OLS results (results4) from linear model above
+coeftest(results4, vcov. = vcovHC(results4, type="HC1"))
+```
+As seen above, the slope coefficient is -6.010 and t-statistic is -6.11.
+
+#### 8)	Estimate a regression model explaining Trump feeling thermometer as a function of gender (e.g., a dummy variable for women). What is the slope coefficient? What is the intercept?  Explain what they mean. 
+
+```{r tidy = FALSE}
+#Create new female variable, with gender equalling 2
+lab$female <- (lab$gender==2)
+
+#Create linear model with Trump thermometer as a function of gender for women
+results5 <- lm(therm_trump ~ female, data = lab)
+
+#Use robust standard errors and display OLS results (results5) from linear model above
+coeftest(results5, vcov. = vcovHC(results5, type="HC1"))
+```
+The slope coefficient from the model above is -4.42, which suggests that female education is negatively correlated with the Trump thermometer. Specifically, for every increase in unit of education, the Trump thermometer drops by -4.42. One can infer from the observations that a higher level of education among women would indicate a more negative feeling towards Trump. The intercept is 20.32, which indicates the Trump thermometer value when female education is zero.
+
+#### 9)	Use the summarize command to calculate the mean value of *therm_trump* for men and women. Try to connect these values back to the regression model above.
+```{r tidy = FALSE}
+#Crete variable that stores the mean value for Trump thermometer for women
+therm_trump_female <- mean(lab$therm_trump[lab$female==1], na.rm = TRUE)
+
+#Create variable that stores the mean value for Trump thermomter for others
+therm_trump_others <- mean(lab$therm_trump[lab$female==0], na.rm = TRUE)
+
+#Calculate the difference between the mean value for Trump thermometer for women and mean value for Trump thermometer for other
+therm_trump_female - therm_trump_others
+```
+
+```{r}
+#View result for the mean value for Trump thermometer for women
+therm_trump_female
+```
+
+
+```{r}
+#View result for the mean value for Trump thermometer for others
+therm_trump_others
+```
+
+The mean value for Trump thermometer for women is 15.9, while the mean value Trump thermometer for others is 20.3. We can relate the low value of 15.9 to the regression model above. As seen in the model above, the Beta hat 1 value was -4.42, implying that every increase in unit of education for females caused the Trump thermometer to drop by -4.42.
