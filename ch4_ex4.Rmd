@@ -51,16 +51,20 @@ summary(OLS.result)
 
 ```
 
+t stat = beta 1 hat / standard error of beta 1 hat
+tmatrix <- CoefMatrix/SEmatrix
 ```{r}
-# have to take second column with 50 beta hat estimates, and run t stats for each of them, then store in a matrix/vector
-CoefMatrix
+summary(OLS.result)["Std. Error"]
+
+
 ```
 
 
-4a. Generate t statistics for coefficient on education for each simulation. What are minimal and maximal values of these t statistics?
 ```{r}
-ttest <- t.test(Ed)
-names(ttest)
-ttest$statistic
-```
+#take second column with 50 beta hat estimates, and run t stats for each of them, then store in a matrix/vector?
+education_coef <- CoefMatrix[,2]
 
+ttest_education <- t.test(education_coef)
+names(ttest_education)
+ttest_education$statistic
+```
