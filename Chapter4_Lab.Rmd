@@ -1,0 +1,93 @@
+---
+title: "Chapter 4 Lab - Allen Church"
+date: October 2, 2019
+output:
+  word_document: default
+  pdf_document: default
+---
+
+## Preparation
+
+```{r setup, include=TRUE, message = FALSE, warning = FALSE}
+require(knitr)
+require(haven)
+require(car)
+library(readxl)
+
+opts_chunk$set(echo = TRUE)
+options(digits = 3)
+```
+
+### Load the data in Chapter4_Lab_ChildPoverty.xlsx (or Chapter4_Lab_ChildPoverty.RData).  The codebook for the data is in the "codebook" tab of Chapter4_Lab_ChildPoverty.xlsx.
+
+```{r}
+
+load("Chapter4_Lab_ChildPoverty.RData")
+```
+
+#### (a) Estimate a model in which public spending on family benefits explains child poverty.  What is the coefficient family spending? Is it statistically significant?
+
+Statistical significance: t value > 2 means significant at 95% level
+
+
+```{r}
+
+r1 <- lm(dta$child_poverty ~ dta$family_spending)
+summary(r1)
+
+```
+
+#### (b) Create a scatterplot that corresponds to the above model.  Include the OLS line, label the axes and label each point with the country name.
+
+```{r, echo=FALSE}
+
+plot(dta$family_spending, dta$child_poverty, xlab = "Family Spending", ylab = "Child Poverty")
+
+abline(a = coef(r1[1], b = coef(r1[2], col = 'red')
+text(dta$family_spending, dta$child_poverty, labels=dta$country)))
+```
+
+
+#### (c) Add the prediction and confidence intervals (as defined in class) to the above figure.
+
+```{r}
+
+
+
+```
+
+#### (d) Estimate a model in which child poverty is a function of unemployment.  Very briefly note the sign and significance of the coefficient on unemployment.
+
+```{r}
+
+View(dta)
+result1 <- lm(child_poverty ~ unemploy, data = dta)
+
+summary(result1)
+
+```
+
+
+#### (e) What other factors should be included in multivariate model in order to help amerliorate endogeneity?  Run a model with all other available and relevant independent variables.  Very briefly comment on the coefficients on family_spending and unemployment.
+
+
+
+```{r}
+
+```
+
+
+
+#### (f) Create a power curve for the *unemploy* variable for values of beta from 0 to 0.1.  Use the actual standard error of the unemploy coefficient from the model explaining child poverty in the model you just ran.  Sketch the power curve for one-sided $\alpha = 0.05$.  Approximately what is the probability of rejecting the null is if the true value of $\beta$ on unemploy is 0.003?  What if the true beta on unemploy is 0.005?
+
+```{r tidy = FALSE}
+
+
+
+```
+
+#### (g) Do the above exercise, but suppose that the standard error on the unemployment variable is half what it was above.  See if you can create a single plot with two power curves, one for each standard error.
+
+```{r tidy = FALSE}
+
+```

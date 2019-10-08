@@ -1,0 +1,68 @@
+---
+title: "Chapter 4 Exercise 3"
+author: "Allen Church"
+date: "10/9/2019"
+output:
+  word_document: default
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Load data and view
+```{r}
+load("Ch4_Exercise3_Presidents_and_Economy.RData")
+pres_dta <- dta
+View(pres_dta)
+```
+
+3a. Estimate model with unemployment as dependent variable and LagDemPresident as independent variable. Interpret coefficients
+```{r}
+#Estimate model with unemployment as dependent variable and LagDemPresident as independent variable. Summarize results
+model1 <- lm(pres_dta$Unemployment ~ pres_dta$LagDemPresident)
+summary(model1)
+```
+A coefficient of -0.9555 means that a 1 unit increase in the Lag Dem President variable (with a value of 1 meaning the president in the previous year was a Democrat) is associated with a decrease in the unemployment rate of -0.9555 percentage points.
+
+3b. Estimate model with ChangeGDPpc as depdendent variable and LagDemPres as independent variable. Interpret coefficients. Why is the sample size different from the first model?
+```{r}
+#Create linear model 2, with ChangeGDPpc as depdendent variable and LagDemPres as independent variable. Summarize results
+model2 <- lm(pres_dta$ChangeGDPpc ~ pres_dta$LagDemPresident)
+summary(model2)
+```
+A coefficient of 220.0 means that a 1 unit increase in the Lag Dem President variable (with a value of 1 meaning the president in the previous year was a Democrat) is associated with an increase in Y of 220% increase in GDP. The sample size is different from the first model because 15 observations were dropped due to missing values. We can do a quick check below as to which values are missing.
+
+```{r}
+#Use is.na function and specify ChangeGDPpc column
+is.na(pres_dta$ChangeGDPpc)
+```
+3c. Choose a significance level (alpha) and alternative hypothesis, and indicate for each model above whether you accept or reject the null hypothesis.
+
+For the 3a. model above, with a significance level of 0.05, I choose an alternative hypothesis that a 1 unit increase in the LagDemPres variable is associated with a large drop in the  unemployment rate. An estimated coefficient of -0.9555 suggests that we can reject the null.
+
+For the 3b. model above, with a significance level of 0.05, I choose an alternative hypothesis that a 1 unit increase in the LagDemPres variable is associated with a large drop in the  unemployment rate. An estimated coefficient of -0.9555 suggests that we can reject the null.
+
+3d. Explain what the p value means for the LagDemPres variable in each model
+
+The p value is the probability of seeing a coefficient as extreme as observed if the null hypothesis were true.
+
+In the first model, with unemployment as the dependent variable and LagDemPresident as the independent variable, the p value is 0.01645. This value suggests a 0.01645 probability of seeing a coefficient attached to the Lag Dem President column under the null hypothesis. Since the rule of thumb is to reject the null if the p value is less than alpha (0.05), we can reject the null.
+
+In the second model, with ChangeGDPpc as the depdendent variable and LagDemPres as the independent variable, the p value is 0.1858. This value suggests a 0.1858 probability of seeing a coefficient attached to the Lag Dem President column under the null hypothesis. Since the rule of thumb is to reject the null if the p value is less than alpha (0.05), we can not reject the null.
+
+3e. Create power curve for model with ChangeGDPpc as dependent variable for alpha = 0.01 and a 1-sided alternative hypothesis. Explain what the power curve means by indicating what the curve means for true Beta-1 = 200, 400, and 800.
+```{r}
+BetaRange <- seq(0, 800, 4)
+stderrorBeta <- 164.0
+PowerCurve <- pnorm(BetaRange/stderrorBeta - 2.32)
+
+plot(BetaRange, PowerCurve, xlab="Beta", ylab = "Probability reject null when alpha = 0.05", type="l")
+```
+According to the power curve above, a true beta one value of 200 is associated with approximately 0.17 probability of rejecting the null. A true beta one value of 400 is associated with approximately 0.58 probability of rejecting the null. A true beta one value of 800 is associated with approximately 0.97 probability of rejecting the null.
+
+3f. Discuss implications of the power curve for the interpretation of results for the model in which ChangeGDPpc was dependent variable (3b).
+
+The results from the power curve above indicate that the probability of rejecting the null converge upon 1 as the true beta one value moves past 800. Conversely, the probability of rejecting the null is small as the beta one value decreases. If the standard error of Beta hat 1 were to increase, this would lower the power.
