@@ -1,0 +1,63 @@
+---
+title: "Chapter 4 Exercise 5"
+author: "Allen Church"
+date: "10/9/2019"
+output:
+  word_document: default
+  html_document: default
+---
+
+5a. Estimate model with income at age 33 as dependent variable and height at age 33 as indepdendent variable. Exclude observations with wages above 400 pounds/hr and height less than 40 inches. Interpret t stats on coefficients.
+
+```{r}
+#Load data
+load("Ch3_Exercise3_Height_and_Wages_UK.RData")
+data <- dta
+
+#Subset data exclusing wages above 400 pounds/hr and height less than 40 inches
+data <- subset(data, gwage33 < 400 & height33 > 40)
+
+#Run linear model and summarize results
+olsresults <- lm(data$gwage33 ~ data$height33)
+summary(olsresults)
+```
+
+t stat = beta 1 hat / standard error of beta 1 hat
+```{r}
+#Calculate t stats to verify using beta hat / standard error of beta hat, since they ask for t stats on the coefficients
+t_stat_beta0 <- -9.34591 / 5.01799
+t_stat_beta1 <- 0.26810 / 0.07199
+
+#Print results
+print(paste0("T stat for beta 0 is ",t_stat_beta0 ))
+print(paste0("T stat for beta 1 is ",t_stat_beta1 ))
+```
+
+In the results above, the t statistic on the coefficient of height is 3.724. Since this is above 2, we can suggest these results are statistically significant.
+
+5b. Explain the p values for the two estimated coefficients.
+
+In the summary of the model above, the p value of 0.0001989 indicates we can reject the null hypothesis decisively - regardless if alpha is set at 0.01 or 0.05 - as the p value is below both of these alphas.
+
+5c. Show how to calculate the 95% confidence interval for coefficient on height
+```{r}
+#Use cofint function and specify olsresults with a level of 0.95 as parameters
+confidence <- confint(olsresults, level = 0.95)
+confidence
+```
+
+5d. Do we accept or reject the null hypothesis that Beta1 = 0 for alpha = 0.01 and a two-sided alternative?
+
+In the model above, the estimated coefficient on height has a value of 0.26810, which suggests that a 1 unit increase in the height variable is associated with a wage increase of 0.26810 pounds/hr. I believe we can reject the null hypothesis that Beta1 = 0, because the p-value of 0.0001989 is less than the alpha of 0.01, which suggests we can reject the null. In addition to this, the t statistic of 3.724 suggests our results are statistically significant.
+
+5e. Do we accept or reject the null hypothesis that Beta0 = 0 (the constant) for alpha = 0.01 and a two sided alternative?
+
+In the model above, the estimated coefficient for Beta0 has a value of -9.34591. I believe we can reject the null hypothesis that Beta0 = 0, because the p-value of 0.0001989 is less than the alpha of 0.01, which suggests we can reject the null.
+
+5f. Limit sample size to first 800 observations. Do we accept or reject the null that Beta1 = 0 for alpha = 0.01 and a two-sided alternative?
+```{r}
+data800 <- data[1:800,]
+olsresults2 <- lm(data800$gwage33 ~ data800$height33)
+summary(olsresults2)
+```
+In contrast to the full dataset with 3669 observations, limiting the number of observations to 800 increases the p value from 0.0001989 to 0.03757. Since the alpha = 0.01, we cannot confidently reject the null hypothesis with a p value greater than the alpha. Clearly, reducing the number of observations increased the p value. In addition to this, the standard error on Beta1 hat increased from 0.07199 to 0.1307. As we reduced the number of observations, the standard error of Beta1 hat increased - both of which indicate a low-power statistical test.
