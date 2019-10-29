@@ -4,4 +4,83 @@ author: "Allen Church"
 date: "October 29, 2019"
 output: html_document
 ---
-Look at PPG bond disbursement (DT.DIS.PBND.CD) 
+- Look at PPG bond disbursement (DT.DIS.PBND.CD) for LAC, as it's in top 4 aggregate.
+- Look at Foreign direct investment, net inflows in reporting economy (BX.KLT.DINV.CD.DT) and see how it relates to PPG bond DIS
+- Look at Exports of goods, services and primary income (BX.GSR.TOTL.CD) and see how it relates to PPG bond DIS
+
+Fetch PPG bond disbursement 
+```{r}
+library(wbstats)
+
+#Search indicators on Databank
+wbsearch(pattern = "PPG, bond")
+
+#Create vector for Latin America and Carribean
+LAC <- c("LAC")
+
+#Specify PPG bond disbursement
+ppg_bond_dis <- ("DT.DIS.PBND.CD")
+
+#Fetch data from WB API, specifying country, indicator, start/end dates and put into dataframe
+bond_data_LAC <- wb(country = LAC, indicator = ppg_bond_dis, startdate = 2014, enddate = 2018, POSIXct = TRUE)
+df <- data.frame(bond_data_LAC)
+View(df)
+```
+
+
+Clean and format data
+```{r}
+#Subset ppg bond disbursement into dataframe, format units to thousands, subset
+ppg_bond_dis <- subset(df, indicatorID == "DT.DIS.PBND.CD")
+
+#Change units to billions USD
+ppg_bond_dis$disbursement <- ppg_bond_dis$value/1000000000
+ppg_bond_dis <- subset(ppg_bond_dis, select = c("date", "indicator", "country", "disbursement"))
+View(ppg_bond_dis)
+```
+
+
+Add exports of goods, services, and primary income and create new dataframe
+```{r}
+#Create vector to include PPG Bond disbursement and export of GSI
+ppg_dis_export <- c("DT.DIS.PBND.CD", "BX.GSR.TOTL.CD")
+
+#Add new indicator to bond_export_df and view
+bond_export_LAC <- wb(country = LAC, indicator = ppg_dis_export, startdate = 2014, enddate = 2018, POSIXct = TRUE)
+bond_export_df <- data.frame(bond_export_LAC)
+
+#Change units to billions USD
+bond_export_df$Values <- bond_export_df$value/1000000000
+bond_export_df <- subset(bond_export_df, select = c("date", "indicator", "country", "Values"))
+View(bond_export_df)
+```
+
+Graph PPG bond disbursement with export GSI
+```{r}
+library(ggplot2)
+
+ggplot(data = bond_export_df, mapping = aes(x=date, y=Values, color=indicator)) +
+  geom_line()
+
+```
+
+List of LAC countries
+```{r}
+LAC_list <- c("ARG", "BRA", "COL", "CRI", "DOM", "ECU", "GTM", "HND", "MEX", "PRY")
+
+#Fetch data from WB API, specifying country, indicator, start/end dates and put into dataframe
+bond_data_LAC_list <- wb(country = LAC_list, indicator = "DT.DIS.PBND.CD", startdate = 2014, enddate = 2018, POSIXct = TRUE)
+df_LAC_list <- data.frame(bond_data_LAC_list)
+df_LAC_list$Values <- df_LAC_list$value/1000000000
+df_LAC_list <- subset(df_LAC_list, select = c("date", "indicator", "country", "Values"))
+View(df_LAC_list)
+```
+
+Graph attempt 2
+```{r}
+ggplot(data = df_LAC_list, mapping = aes(x=date, y=Values, group=country, color=country)) +
+  geom_point() + 
+  geom_line() 
+
+```
+
