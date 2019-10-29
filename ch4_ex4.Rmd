@@ -2,7 +2,9 @@
 title: "Chapter 4 Exercise 4"
 author: "Allen Church"
 date: "10/9/2019"
-output: html_document
+output:
+  word_document: default
+  html_document: default
 ---
 4. Run simulation code in the initial part of the education and salary question from the exercises in Ch 3 (p 87)
 ```{r}
@@ -14,7 +16,9 @@ TrueBeta1	= 1000	# "True" beta1 for the simulated
 SD 		    = 10000	# The standard deviation of the error. The bigger this is, the larger the average value of epsilon
 Ed = 16 * runif(Obs)# Simulate years of education as being between 0 and 16
   # "runif" is a uniform random variable between 0 and 1, with all values having equal probability
-CoefMatrix	= matrix(NA, Reps, 2)	# Matrix to store our results.  
+CoefMatrix	= matrix(NA, Reps, 2)
+SEMatrix    = matrix(NA, Reps, 2)
+# Matrix to store our results - for both coefficients and std errors
   # 1st argument is NA, meaning we store "not available" as initial values in the matrix
   # 2nd argument is Reps, meaning the number of rows is equal to number of times we run the simulations
   # 3rd argument is 2 meaning we have 2 columns, one for storing the beta0 estimate and one for storing the beta1 estimate
@@ -29,6 +33,7 @@ for (ii in 1:Reps) {
   # "runif" is a uniform random variable between 0 and 1, with all values having equal probability
   OLS.result = lm(Salary ~ Ed) # Run a regression using simulated values of Y
   CoefMatrix[ii, ]	= coefficients(OLS.result)	 # Put OLS.result coefficients in row ii of CoefMatrix
+  SEMatrix[ii, ]  = coef(summary(OLS.result))[, "Std. Error"]
   ## For fun: plot results for each survey
   ## plot(Ed, Salary, pch = 19, col= "darkgreen")		
   ## abline(OLS.result, lwd = 3, col= "darkgreen")
@@ -48,23 +53,139 @@ c(mean(CoefMatrix[,2]), min(CoefMatrix[,2]), max(CoefMatrix[,2]))
 plot(density(CoefMatrix[,2]), main = 'Kernel Density Estimate')
 
 summary(OLS.result)
-
 ```
 
 t stat = beta 1 hat / standard error of beta 1 hat
 tmatrix <- CoefMatrix/SEmatrix
 ```{r}
-summary(OLS.result)["Std. Error"]
+#Create a T matrix, which is results from the coefficient matrix divided by results from the standard error matrix
+T.matrix = CoefMatrix/SEMatrix
 
+## Minimum t-stats for both coefficients (b0, b1)
+c(min(T.matrix[, 1]),  min(T.matrix[, 2]) )
 
+#Print minimum beta 0 t-stat to user
+print(paste0("The minimum t-stat for beta 0 is ", min(T.matrix[, 1])))
+
+#Print minimum beta 1 t-stat to user
+print(paste0("The minimum t-stat for beta 1 is ", min(T.matrix[, 2])))
+
+## Maximum t-stats for both coefficients (b0, b1)
+c(max(T.matrix[, 1]),  max(T.matrix[, 2]) )
+
+#Print maximum beta 0 t-stat to user
+print(paste0("The maximum t-stat for beta 0 is ", max(T.matrix[, 1])))
+
+#Print maximum beta 1 t-stat to user
+print(paste0("The maximum t-stat for beta 1 is ", max(T.matrix[, 2])))
+```
+4b. Generate two-sided p values for the coefficient on education for each simulation. What are minimal and maximal values of these p values?
+```{r}
+#Create two sided p values, and assign degrees of freedom from lm summary in 4a.
+deg_freedom <- 98
+pvals <- 2*(1-pt(abs(T.matrix),deg_freedom))
+
+#Create P matrix with necessary shape to store results below
+P.Matrix = matrix(NA, Reps, 2)
+
+# For loop to assign p vals into the P Matrix
+for (ii in 1:Reps) { 
+  #OLS.result = lm(Salary ~ Ed) # Run a regression using simulated values of Y
+  #CoefMatrix[ii, ]	= coefficients(OLS.result)	 # Put OLS.result coefficients in row ii of CoefMatrix
+  #SEMatrix[ii, ]  = coef(summary(OLS.result))[, "Std. Error"]
+  P.Matrix = pvals
+  
+}
+
+## Minimum t-stats for both coefficients (b0, b1)
+c(min(P.Matrix[, 1]),  min(P.Matrix[, 2]) )
+
+#Print minimum beta 0 p value to user
+print(paste0("The minimum p value for beta 0 is ", min(P.Matrix[, 1])))
+
+#Print minimum beta 1 p value to user
+print(paste0("The minimum p value for beta 1 is ", min(P.Matrix[, 2])))
+
+## Maximum p values for both coefficients (b0, b1)
+c(max(P.Matrix[, 1]),  max(P.Matrix[, 2]) )
+
+#Print maximum beta 0 p value to user
+print(paste0("The maximum p value for beta 0 is ", max(P.Matrix[, 1])))
+
+#Print maximum beta 1 p value to user
+print(paste0("The maximum p value for beta 1 is ", max(P.Matrix[, 2])))
 ```
 
+4c. In what percent of simulations do we reject null hypothesis that Beta education = 0 at alpha = 0.05 level with a two-sided alternative hypothesis?
+
+The maximum p value for Beta 1 above is 0.032. This indicates a 0.032 probability of observing the Beta education coefficient as large as observed if the Beta education coefficient equals 0.
+
+4d. Re-run simulations and set true value of Beta education to 0. Do this for 500 simulations and report what percent of time we reject the null at alpha = 0.05 level with a two-sided alternative hypothesis
 
 ```{r}
-#take second column with 50 beta hat estimates, and run t stats for each of them, then store in a matrix/vector?
-education_coef <- CoefMatrix[,2]
+## Set model and simulation parameters
+Obs_1       = 100		# Number of observations in each simulation
+Reps_1      = 500		# Number of times we run the simulation
+TrueBeta0_1	= 48	# "True" beta0 for the simulated
+TrueBeta1_1	= 0	# "True" beta1 for the simulated
+SD 		    = 10000	# The standard deviation of the error. The bigger this is, the larger the average value of epsilon
+Ed_1 = 16 * runif(Obs)# Simulate years of education as being between 0 and 16
+  # "runif" is a uniform random variable between 0 and 1, with all values having equal probability
+CoefMatrix_1	= matrix(NA, Reps_1, 2)
+SEMatrix_1    = matrix(NA, Reps_1, 2)
 
-ttest_education <- t.test(education_coef)
-names(ttest_education)
-ttest_education$statistic
+# Matrix to store our results - for both coefficients and std errors
+  # 1st argument is NA, meaning we store "not available" as initial values in the matrix
+  # 2nd argument is Reps, meaning the number of rows is equal to number of times we run the simulations
+  # 3rd argument is 2 meaning we have 2 columns, one for storing the beta0 estimate and one for storing the beta1 estimate
+
+# Loop: repeat the commands between the brackets multiple times
+for (ii in 1:Reps_1) { 
+  Salary_1 	= TrueBeta0_1+ TrueBeta1_1* Ed_1 + SD*rnorm(Obs_1) 	
+  # Generate Salary = beta0 + beta1*Ed + epsilon
+  # beta0 is the constant
+  # beta1 is the number multiplied by the X variable
+  # Epsilon has 2 parts: SD is the standard deviation; the bigger it is, the more epsilon varies.
+  # "runif" is a uniform random variable between 0 and 1, with all values having equal probability
+  OLS.result_1 = lm(Salary_1 ~ Ed_1) # Run a regression using simulated values of Y
+  CoefMatrix_1[ii, ]	= coefficients(OLS.result_1)	 # Put OLS.result coefficients in row ii of CoefMatrix
+  SEMatrix_1[ii, ]  = coef(summary(OLS.result_1))[, "Std. Error"]
+}
+
+T.matrix_1 = CoefMatrix_1/SEMatrix_1
+
+#Create two sided p values, and assign degrees of freedom from lm summary in 4a.
+deg_freedom_1 <- 98
+pvals_1 <- 2*(1-pt(abs(T.matrix_1),deg_freedom_1))
+
+#Create P matrix with necessary shape to store results below
+P.Matrix_1 = matrix(NA, Reps_1, 2)
+
+# For loop to assign p vals into the P Matrix
+for (ii in 1:Reps_1) { 
+  #OLS.result = lm(Salary ~ Ed) # Run a regression using simulated values of Y
+  #CoefMatrix[ii, ]	= coefficients(OLS.result)	 # Put OLS.result coefficients in row ii of CoefMatrix
+  #SEMatrix[ii, ]  = coef(summary(OLS.result))[, "Std. Error"]
+  P.Matrix_1 = pvals_1
+  
+}
+
+## Minimum t-stats for both coefficients (b0, b1)
+c(min(P.Matrix_1[, 1]),  min(P.Matrix_1[, 2]) )
+
+#Print minimum beta 0 p value to user
+print(paste0("The minimum p value for beta 0 is ", min(P.Matrix_1[, 1])))
+
+#Print minimum beta 1 p value to user
+print(paste0("The minimum p value for beta 1 is ", min(P.Matrix_1[, 2])))
+
+## Maximum p values for both coefficients (b0, b1)
+c(max(P.Matrix_1[, 1]),  max(P.Matrix_1[, 2]) )
+
+#Print maximum beta 0 p value to user
+print(paste0("The maximum p value for beta 0 is ", max(P.Matrix_1[, 1])))
+
+#Print maximum beta 1 p value to user
+print(paste0("The maximum p value for beta 1 is ", max(P.Matrix_1[, 2])))
 ```
+After re-running the simulations with 500 reps and setting a true beta 1 at 0, the minimum p value for Beta 1 above is 0.004, however maximum p value for Beta 1 is 0.99. Due to this range of values, we cannot decisively reject the null.
