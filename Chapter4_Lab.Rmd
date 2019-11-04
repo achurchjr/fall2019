@@ -1,6 +1,6 @@
 ---
 title: "Chapter 4 Lab - Allen Church"
-date: October 2, 2019
+date: October 9, 2019
 output:
   word_document: default
   pdf_document: default
@@ -21,73 +21,111 @@ options(digits = 3)
 ### Load the data in Chapter4_Lab_ChildPoverty.xlsx (or Chapter4_Lab_ChildPoverty.RData).  The codebook for the data is in the "codebook" tab of Chapter4_Lab_ChildPoverty.xlsx.
 
 ```{r}
-
 load("Chapter4_Lab_ChildPoverty.RData")
+View(dta)
 ```
 
 #### (a) Estimate a model in which public spending on family benefits explains child poverty.  What is the coefficient family spending? Is it statistically significant?
 
 Statistical significance: t value > 2 means significant at 95% level
-
-
 ```{r}
-
+#Estimate first linear model and summarize results
 r1 <- lm(dta$child_poverty ~ dta$family_spending)
 summary(r1)
-
 ```
+From the model above, the coefficient of -0.04379 means that a 1 unit increase in family spending is associated with a decrease of 0.04379 units of child poverty units. However, we cannot call these results statistically significant, as the t value is -5.85.
 
 #### (b) Create a scatterplot that corresponds to the above model.  Include the OLS line, label the axes and label each point with the country name.
-
 ```{r, echo=FALSE}
-
-plot(dta$family_spending, dta$child_poverty, xlab = "Family Spending", ylab = "Child Poverty")
-
-abline(a = coef(r1[1], b = coef(r1[2], col = 'red')
-text(dta$family_spending, dta$child_poverty, labels=dta$country)))
+plot(dta$family_spending, dta$child_poverty, xlab = "Family Spending", ylab = "Child Poverty", type="n",)
+text(dta$family_spending, dta$child_poverty, dta$country, cex = 0.7)
+abline(r1, col= "black", lwd = 2)
 ```
 
 
 #### (c) Add the prediction and confidence intervals (as defined in class) to the above figure.
 
 ```{r}
+new.dat <- data.frame(family_spending=seq(0, 4, length.out=15))
+Prediction.interval = predict(r1, newdata = new.dat, interval = 'prediction', level = 0.95)
+Confidence.interval = predict(r1, newdata = new.dat, interval = 'confidence', level = 0.95)
 
-
-
+plot(dta$child_poverty ~ dta$family_spending, xlab = "Family spending", ylab = "Child poverty", type="n",)
+text(dta$family_spending, dta$child_poverty, dta$country, cex = 0.7)
+abline(r1, col= "darkblue", lwd = 2)
+		# Add confidence intervals
+		#lines(x = new.dat$family_spending, y = Confidence.interval[, "lwr"], col= "darkgreen")
+		#lines(x = new.dat$family_spending, y = Confidence.interval[, "upr"], col= "darkgreen")
+		# Add prediction intervals
+		#lines(x = new.dat$family_spending, y = Prediction.interval[, "lwr"], col= "red", lty = 2)
+		#lines(x = new.dat$family_spending, y = Prediction.interval[, "upr"], col= "red", lty = 2)
 ```
 
 #### (d) Estimate a model in which child poverty is a function of unemployment.  Very briefly note the sign and significance of the coefficient on unemployment.
-
 ```{r}
-
-View(dta)
-result1 <- lm(child_poverty ~ unemploy, data = dta)
-
-summary(result1)
-
+#Create linear model with child poverty as dependent variable and unemployment as independent variable. Summarize results
+result2 <- lm(dta$child_poverty ~ dta$unemploy)
+summary(result2)
 ```
-
+From the model above, the coefficient of 0.00365 means that a 1 unit increase in unemployment is associated with an increase of 0.00365 units of child poverty units. However, we cannot call these results statistically significant, as the t value is 1.89.
 
 #### (e) What other factors should be included in multivariate model in order to help amerliorate endogeneity?  Run a model with all other available and relevant independent variables.  Very briefly comment on the coefficients on family_spending and unemployment.
-
-
-
 ```{r}
-
+#Create multivariate model with child poverty as dependent variable. Independent variables are family spending, child vaccination rates, and unemployment. Summarize results
+result3 <- lm(dta$child_poverty ~ dta$family_spending + dta$child_vac + dta$unemploy)
+summary(result3)
 ```
-
-
+From the model above, the unemployment coefficient of 0.00165 suggests that a 1 unit increase in unemployment is associated with an increase of 0.00165 units of child poverty units. The child vaccination coefficient of -0.00213 suggests that a 1 unit increase in child vaccination units is associated with a decrease of 0.00213 of child poverty.
 
 #### (f) Create a power curve for the *unemploy* variable for values of beta from 0 to 0.1.  Use the actual standard error of the unemploy coefficient from the model explaining child poverty in the model you just ran.  Sketch the power curve for one-sided $\alpha = 0.05$.  Approximately what is the probability of rejecting the null is if the true value of $\beta$ on unemploy is 0.003?  What if the true beta on unemploy is 0.005?
 
 ```{r tidy = FALSE}
+#Create sequence with true betas
+TrueBeta <- seq(0.001, 0.01, by = 0.0001)
 
+#Calculate standard error by taking square root of variance
+se <- sqrt(vcov(result2)[2, 2])
 
+#Create quantile functions below
+qnorm(0.95, mean = 0, sd = 1)
+qnorm(0.975, mean = 0, sd = 1)
+qnorm(0.995, mean = 0, sd = 1)
 
+#Curve with probability of normal distribution where mean is greater than 2.58
+power_1 <- 1 - pnorm(2.58, mean = TrueBeta/se, sd = 1)
+#Curve with probability of normal distribution where mean is greater than 1.96
+power_5 <- 1 - pnorm(1.96, mean = TrueBeta/se, sd = 1)
+#Curve with probability of normal distribution where mean is greater than 1.64
+power_10 <- 1- pnorm(1.64, mean = TrueBeta/se, sd = 1)
 ```
+
+Plotting code below
+```{r}
+plot(TrueBeta, power_1, type = "l", xlab = "Effect of unemployment", ylab = "Power", col = 4, lty=2)
+lines(TrueBeta, power_5, col = 1, lwd = 2)
+lines(TrueBeta, power_10, col = 2, lty = 2)
+abline(v = 0.003, col = 1, lty = 2)
+abline(v = 0.005, col = 1, lty = 2)
+legend("bottomright", c(expression(paste(alpha, " = 0.01")),
+                    expression(paste(alpha, " = 0.05")),
+                    expression(paste(alpha, " = 0.10"))),
+                    lty = c(2,1,2), col = c(4,1,2), cex = 0.8)
+axis(1, at=0.003, labels = 0.003, cex.axis=0.7, mgp = c(2,.4,0)) #and label them on the x-axis
+axis(1, at=0.005, labels = 0.005, cex.axis=0.7, mgp = c(2,.4,0))
+```
+
 
 #### (g) Do the above exercise, but suppose that the standard error on the unemployment variable is half what it was above.  See if you can create a single plot with two power curves, one for each standard error.
 
+Plotting below
 ```{r tidy = FALSE}
-
+power_5_half <- 1- pnorm(1.96, mean = TrueBeta/(se/2), sd = 1)
+plot(TrueBeta, power_5, type = "l", xlab = "Effect of unemployment", ylab = "Power", 
+     col = 1)
+lines(TrueBeta, power_5_half, col = 2)
+legend("bottomright", legend = c("SD", "SD/2"), lty = c(1,1), col = c(1,2), cex = 0.8)
+abline(v = 0.003, col = 1, lty = 2)
+abline(v = 0.005, col = 1, lty = 2)
+axis(1, at=0.003,	labels = 0.003, cex.axis=0.7, mgp = c(2,.4,0))
+axis(1, at=0.005,	labels = 0.005, cex.axis=0.7, mgp = c(2,.4,0))
 ```

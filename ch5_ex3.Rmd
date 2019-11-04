@@ -1,0 +1,47 @@
+---
+title: "Ch 5 Exercise 3"
+author: "Allen Church"
+date: "10/21/2019"
+output:
+  pdf_document: default
+  html_document: default
+---
+Load data
+```{r setup, include=TRUE, message = FALSE, warning = FALSE}
+require(knitr)
+require(haven)
+require(AER)
+
+opts_chunk$set(echo = TRUE)
+options(digits = 3)
+
+#Add working directory, assign data to lab variable
+data <- load("/Users/allenchurch/Ch5_Exercise3_Cell_phone_subscriptions.RData")
+```
+
+3a. Create bivariate model with traffic deaths as dependent variable and number of cell phone subscriptions as independent variable. Do you suspect endogeneity, if so why?
+```{r}
+ols1 <- lm(dta$numberofdeaths ~ dta$cell_subscription)
+summary(ols1)
+```
+The results above indicate endogeneity, since the testimated coefficient is 9.115e-02. As this result seems incredibly high, we suspect endogeneity since changes in this independent variable (cell_subscription) are related to factors in the error term.
+
+3b. Add population to model. What happens to the coefficients on cell phone subscriptions, why?
+```{r}
+ols2 <- lm(dta$numberofdeaths ~ dta$cell_subscription + dta$population)
+summary(ols2)
+```
+After adding population to the model, the coefficient on cell_subscription changes from positive to negative. This indicates that the effects of population coefficient were included in cell_subscription, which indicates that our previous results were endogeneous.
+
+3c. Add total miles driven to the model. What happens to coefficient on cell phone subscriptions, why?
+```{r}
+ols3 <- lm(dta$numberofdeaths ~ dta$cell_subscription + dta$population + dta$total_miles_driven)
+summary(ols3)
+```
+Adding total miles driven to the model causes the coefficient on cell phone subscriptions to turn from negative to positive, from -2.109e-01 to 2.465e-03. This indicates omitted variable bias, in which the variable affects the dependent variable (number of deaths) and is correlated with the independent variable (cell phone subscriptions).
+
+3d. Based on model in part c, calculate the variance inflation factor for population and total miles driven. Why are they different? Discuss implications of this level of multicollinearity for the coefficient estimates and the precision of coefficient estimates.
+```{r}
+vif(ols3)
+```
+The variance inflation factor above represents how much variance is inflated due to multicollinearity. For cell_subscription, the VIF is 344.3690, which suggests cell_subscription is highly related to other independent variables. The VIF for population is 492.7790, which suggests that this variable is the highest related to the other independent variables. The VIF for miles_driven is 43.0868, which while not as high as the other two, is still high enough for us to note uncertainty in our results. High amounts of multicollinearity prevents the producers of an analysis from asserting much about the results, again due to high variance. However, it is important to note that despite the model having multicollinearity, this does not cause bias.

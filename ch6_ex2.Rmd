@@ -1,0 +1,92 @@
+---
+title: "Chapter 6 Exercise 2"
+author: "Allen Church"
+date: "11/6/2019"
+output: html_document
+---
+
+```{r}
+require(knitr)
+require(haven)
+require(AER)
+
+opts_chunk$set(echo = TRUE)
+options(digits = 3)
+
+#Add working directory, assign data to lab variable
+load("/Users/allenchurch/Ch6_Exercise2_FederalReserve.RData")
+```
+
+2a.
+Democrat scatterplot
+```{r}
+#Subset dataset and specify democrat column to equal 1
+dem_plot <- subset(dta, dta$democrat==1)
+
+plot(dem_plot$election, dem_plot$FEDFUNDS, main="Quarters and Federal Funds Rate: Democrats",
+     xlab="Quarters Since Previous Election", ylab = "FFR (%)", pch = 19, col='blue')
+```
+
+Republican Scatterplot
+```{r}
+#Subset dataset and specify democrat column to equal 0
+rep_plot <- subset(dta, dta$democrat==0)
+
+plot(rep_plot$election, rep_plot$FEDFUNDS, main="Quarters and Federal Funds Rate: Republicans",
+     xlab="Quarters Since Previous Election", ylab = "FFR (%)", pch = 19, col = "red")
+```
+
+2b. Create interaction variable between election and democrat to test whether closeness to elections has the same effect on democrats and republicans.
+```{r}
+#Create interaction variable by multiplying democrat dummy variable with election
+dta$duminteract <- dta$democrat * dta$election
+```
+
+Run model with FFR as dependent variable, allowing effect of election variable to vary by party of president
+```{r}
+olsinteraction <- lm(dta$FEDFUNDS ~ dta$democrat + dta$election + dta$duminteract)
+summary(olsinteraction)
+```
+```{r}
+broom::tidy(olsinteraction)
+```
+
+2b. i. What change in FFR is associated with a 1 unit increase in election variable when president is republican?
+There is a -0.265 change in FFR associated with a 1 unit increase in the election variable when the president is Republican.
+
+2b. ii. What change in FFR is associated with a 1 unit increase in election variable when president is democrat?
+There is a 0.558 change in FFR associated with a 1 unit increase in the election variable when the president is Democrat.
+
+
+2c. Is the effect of election statistically significant under republicans?
+```{r}
+olsrepublican <- lm(rep_plot$FEDFUNDS ~ rep_plot$election)
+summary(olsrepublican)
+```
+
+Is the effect of election statistically significant under democrats?
+```{r}
+olsdemocrat <- lm(dem_plot$FEDFUNDS ~ dem_plot$election)
+summary(olsdemocrat)
+```
+
+2d. Fitted lines for relationship between election and interest rates - Republicans.
+```{r}
+plot(rep_plot$election, rep_plot$FEDFUNDS, main="Quarters and Federal Funds Rate: Republicans",
+     xlab="Quarters Since Previous Election", ylab = "FFR (%)", pch = 19, col='red')
+abline(lm(rep_plot$FEDFUNDS ~ rep_plot$election), col = 'blue')
+```
+
+Fitted lines for relationship between election and interest rates - Democrats.
+```{r}
+plot(dem_plot$election, dem_plot$FEDFUNDS, main="Quarters and Federal Funds Rate: Democrats",
+     xlab="Quarters Since Previous Election", ylab = "FFR (%)", pch = 19, col='blue')
+abline(lm(dem_plot$FEDFUNDS ~ dem_plot$election), col = 'red' )
+```
+
+2e. 
+```{r}
+olsinteraction_lag <- lm(dta$FEDFUNDS ~ dta$democrat + dta$election + dta$duminteract + dta$lag_FEDFUNDS + dta$inflation)
+summary(olsinteraction_lag)
+```
+

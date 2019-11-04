@@ -1,0 +1,45 @@
+---
+title: "Chapter 5 Exercise 4"
+author: "Allen Church"
+date: "10/21/2019"
+output:
+  pdf_document: default
+  html_document: default
+---
+Load data
+```{r setup, include=TRUE, message = FALSE, warning = FALSE}
+require(knitr)
+require(haven)
+require(AER)
+
+opts_chunk$set(echo = TRUE)
+options(digits = 3)
+
+#Add working directory, assign data to lab variable
+load("/Users/allenchurch/Ch5_Exercise4_Speeding_tickets.RData")
+View(dta)
+```
+
+4a. Estimate bivariate OLS model in which ticket amount is a function of age. Is age statistically significant, is endogeneity possible?
+```{r}
+ols1 <- lm(dta$Amount ~ dta$Age)
+summary(ols1)
+```
+According to the results above, the Beta Hat One coefficient on age is -0.2893, which suggests that a 1 unit increase in age is associated with decrease of 0.2893 units in ticket amount. As the t statistic is 11.7, and the Beta Hat One coefficient on age is -0.2893, we can posit that these results are statistically significant. However, endogeneity is possible because other independent variables may influence whether age influences the ticket amount - namely race and gender in our data, as well as other observations that were not collected.
+
+4b. Estimate the model form part a, also controlling for miles per hour over the speed limit. Explain what happens to the coefficient on age and why?
+```{r}
+ols2 <- lm(dta$Amount ~ dta$Age + dta$MPHover)
+summary(ols2)
+```
+After controlling for miles per hour over the speed limit, the coefficient on age increases - from -0.2893 to 0.0250. When adding MPHover to the model, the Beta Hat One estimate for age suggests that a one unit increase in age is associated with an increase of 0.0250 units in amount. This increase in the coefficient estimate suggests that the previous model was biased by leaving out MPHover, which clearly affected both the dependent variable and is correlated with the independent variable.
+
+3c. Suppose we had only the first 1000 observations. Estimate model from part b and report what happens to standard errors and t stats when we have fewer observations.
+```{r}
+#Subset dta by first 1000 rows and assign to dta2
+dta2 <- dta[1:1000,]
+
+ols3 <- lm(dta2$Amount ~ dta2$Age + dta2$MPHover)
+summary(ols3)
+```
+The standard error on age increase from 0.0176 to 0.192. The standard error on MPHover increases from 0.0387 to 0.342. For age, the t stats decrease from 1.42 to 0.95. For MPHover, the t stats decrease from 178.13 to 20.03. As seen in the results above, a lower number of observations will increase the standard error, while decreasing the t stats.

@@ -1,0 +1,25 @@
+---
+title: "Chapter 6 Exercise 4"
+author: "Allen Church"
+date: "11/6/2019"
+output: html_document
+---
+
+```{r setup, include=TRUE, message = FALSE, warning = FALSE}
+require(knitr)
+require(haven)
+require(AER)
+
+opts_chunk$set(echo = TRUE)
+options(digits = 3)
+
+#Add working directory, assign data to lab variable
+load("/Users/allenchurch/Ch6_Exercise4_Speeding_tickets.RData")
+View(dta)
+```
+
+4a. Difference of means test to assess if fines for men and women are different. Do we have reason to expect endogeneity?
+```{r}
+
+```
+

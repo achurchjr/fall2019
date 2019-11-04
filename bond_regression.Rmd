@@ -46,7 +46,7 @@ Add exports of goods, services, and primary income and create new dataframe
 ppg_dis_export <- c("DT.DIS.PBND.CD", "BX.GSR.TOTL.CD")
 
 #Add new indicator to bond_export_df and view
-bond_export_LAC <- wb(country = LAC, indicator = ppg_dis_export, startdate = 2014, enddate = 2018, POSIXct = TRUE)
+bond_export_LAC <- wb(country = LAC_list, indicator = ppg_dis_export, startdate = 2014, enddate = 2018, POSIXct = TRUE)
 bond_export_df <- data.frame(bond_export_LAC)
 
 #Change units to billions USD
@@ -80,7 +80,16 @@ Graph attempt 2
 ```{r}
 ggplot(data = df_LAC_list, mapping = aes(x=date, y=Values, group=country, color=country)) +
   geom_point() + 
-  geom_line() 
+  geom_line()
 
 ```
+
+Plot
+```{r}
+x = bond_export_df$Values[bond_export_df$indicator == 'PPG, bonds (DIS, current US$)']
+y = bond_export_df$Values[bond_export_df$indicator == 'Exports of goods, services and primary income (BoP, current US$)']
+plot(x, y)
+text(x,y, labels = bond_export_df$date)
+```
+
 
