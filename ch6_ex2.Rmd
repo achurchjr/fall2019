@@ -2,87 +2,87 @@
 title: "Chapter 6 Exercise 2"
 author: "Allen Church"
 date: "11/6/2019"
-output: html_document
+output:
+  word_document: default
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r}
 require(knitr)
 require(haven)
-require(AER)
 
 opts_chunk$set(echo = TRUE)
 options(digits = 3)
 
-#Add working directory, assign data to lab variable
-load("/Users/allenchurch/Ch6_Exercise2_FederalReserve.RData")
+load("Ch6_Exercise2_FederalReserve.RData")
 ```
 
 2a.
 Democrat scatterplot
 ```{r}
-#Subset dataset and specify democrat column to equal 1
-dem_plot <- subset(dta, dta$democrat==1)
+#Subset dataset and specify Democrat column to equal 1
+dem_plot <- subset(dta, dta$Democrat==1)
 
-plot(dem_plot$election, dem_plot$FEDFUNDS, main="Quarters and Federal Funds Rate: Democrats",
-     xlab="Quarters Since Previous Election", ylab = "FFR (%)", pch = 19, col='blue')
+plot(dem_plot$Quarters, dem_plot$FEDFUNDS, main="Quarters and Federal Funds Rate: Democrats",
+     xlab="Quarters Since Previous Election", ylab = "Federal Funds Rate (%)", pch = 19, col='blue')
 ```
 
 Republican Scatterplot
 ```{r}
-#Subset dataset and specify democrat column to equal 0
-rep_plot <- subset(dta, dta$democrat==0)
+#Subset dataset and specify Democrat column to equal 0
+rep_plot <- subset(dta, dta$Democrat==0)
 
-plot(rep_plot$election, rep_plot$FEDFUNDS, main="Quarters and Federal Funds Rate: Republicans",
-     xlab="Quarters Since Previous Election", ylab = "FFR (%)", pch = 19, col = "red")
+plot(rep_plot$Quarters, rep_plot$FEDFUNDS, main="Quarters and Federal Funds Rate: Republicans",
+     xlab="Quarters Since Previous Election", ylab = "Federal Funds Rate (%)", pch = 19, col = "red")
 ```
 
-2b. Create interaction variable between election and democrat to test whether closeness to elections has the same effect on democrats and republicans.
+2b. Create interaction variable between Quarters and Democrat to test whether closeness to Quarters has the same effect on Democrats and Republicans. Run model with FFR as dependent variable, allowing effect of Quarters variable to vary by party of president.
 ```{r}
-#Create interaction variable by multiplying democrat dummy variable with election
-dta$duminteract <- dta$democrat * dta$election
-```
+#Create interaction variable by multiplying Democrat dummy variable with Quarters
+dta$duminteract <- dta$Democrat * dta$Quarters
 
-Run model with FFR as dependent variable, allowing effect of election variable to vary by party of president
-```{r}
-olsinteraction <- lm(dta$FEDFUNDS ~ dta$democrat + dta$election + dta$duminteract)
+#Run model with FFR as dependent variable and Democrat, Quarters, and duminteract as independent variables
+olsinteraction <- lm(dta$FEDFUNDS ~ dta$Democrat + dta$Quarters + dta$duminteract)
 summary(olsinteraction)
 ```
+
+2b. i. What change in FFR is associated with a 1 unit increase in Quarters variable when president is republican?
+There is a -0.2649 change in FFR associated with a 1 unit increase in the Quarters variable when the president is Republican.
+
+2b. ii. What change in FFR is associated with a 1 unit increase in Quarters variable when president is Democrat?
+There is a 0.5582 change in FFR associated with a 1 unit increase in the Quarters variable when the president is Democrat.
+
+2c. Is the effect of Quarters statistically significant under Republicans?
 ```{r}
-broom::tidy(olsinteraction)
-```
-
-2b. i. What change in FFR is associated with a 1 unit increase in election variable when president is republican?
-There is a -0.265 change in FFR associated with a 1 unit increase in the election variable when the president is Republican.
-
-2b. ii. What change in FFR is associated with a 1 unit increase in election variable when president is democrat?
-There is a 0.558 change in FFR associated with a 1 unit increase in the election variable when the president is Democrat.
-
-2c. Is the effect of election statistically significant under republicans?
-```{r}
-olsrepublican <- lm(rep_plot$FEDFUNDS ~ rep_plot$election)
+olsrepublican <- lm(rep_plot$FEDFUNDS ~ rep_plot$Quarters)
 summary(olsrepublican)
 ```
+The coefficient on Quarters under Republicans is negative (-0.265) with a t statistic of 4.2, implying it is statistically significant.
 
-Is the effect of election statistically significant under democrats? - filter for democrats
+Is the effect of Quarters statistically significant under Democrats?
 ```{r}
-olsdemocrat <- lm(dem_plot$FEDFUNDS ~ dem_plot$election)
-summary(olsdemocrat)
+olsDemocrat <- lm(dem_plot$FEDFUNDS ~ dem_plot$Quarters)
+summary(olsDemocrat)
 ```
+The coefficient on Quarters under Democrats is positive (0.293) with a t statistic of 4.58, implying it is statistically significant.
 
-2d. Fitted lines for relationship between election and interest rates
+
+2d. Fitted lines for relationship between Quarters and interest rates
 ```{r}
-#View(dta)
-plot(dem_plot$election, dem_plot$FEDFUNDS, main="Quarters and Federal Funds Rate",
-     xlab="Quarters Since Previous Election", ylab = "FFR (%)", pch=19, col='blue')
-points(rep_plot$election, rep_plot$FEDFUNDS, pch=18, col='red')
-abline(lm(dem_plot$FEDFUNDS ~ dem_plot$election), col = 'blue')
-abline(lm(rep_plot$FEDFUNDS ~ rep_plot$election), col = 'red')
+plot(dem_plot$Quarters, dem_plot$FEDFUNDS, main="Quarters and Federal Funds Rate",
+     xlab="Quarters Since Previous Election", ylab = "Federal Funds Rate (%)", pch=19, col='blue')
+points(rep_plot$Quarters, rep_plot$FEDFUNDS, pch=18, col='red')
+abline(lm(dem_plot$FEDFUNDS ~ dem_plot$Quarters), col = 'blue')
+abline(lm(rep_plot$FEDFUNDS ~ rep_plot$Quarters), col = 'red')
 legend("topleft", legend = c("Democrat", "Republican"), pch=c(19, 18), col=c("blue", "red"))
 ```
+The fitted lines above imply that for Democratic presidents, the Federal Funds Rate gradually increases as Quarters since previous election increase. Conversely, the fitted line for Republican presidents implies that the Federal Funds Rate gradually decreases as Quarters since previous election increase. These differing trends in Federal Funds Rates imply that the Federal Reserve is not entirely free from political influence.
 
 2e. 
 ```{r}
-olsinteraction_lag <- lm(dta$FEDFUNDS ~ dta$democrat + dta$election + dta$duminteract + dta$lag_FEDFUNDS + dta$inflation)
+olsinteraction_lag <- lm(dta$FEDFUNDS ~ dta$Democrat + dta$Quarters + dta$duminteract + dta$lag_FEDFUNDS + dta$inflation)
 summary(olsinteraction_lag)
 ```
 
+After incorporating lag_FEDFUNDS and inflation into the model above, the statistical significance of the previously included coefficients drops below 2. Specifically, the Democrat, Quarters, and duminteract coefficients change their t statistics to 0.46, 1.37, and 1.7, respectively. However, including the lag_FEDFUNDS coefficient indicates this is highly statistically significant, with a t statistic of 37.54. Interestingly, including inflation produces a t statistic of only 4.72, which while statistically significant, is not as significant as the lag_FEDFUNDS coefficient. Running the model with these included variables indicates that lagged effective federal funds rate and inflation rate have statistically significant - yet differing - effects on effective federal funds rate.

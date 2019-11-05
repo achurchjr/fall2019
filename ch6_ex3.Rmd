@@ -1,0 +1,46 @@
+---
+title: "Chapter 6 Question 3"
+author: "Allen Church"
+date: "November 6, 2019"
+output:
+  word_document: default
+  html_document: default
+---
+
+```{r}
+library(readxl)
+dta <- read_excel("Battleground-65-Final-Dataset.xlsx")
+#View(dta)
+```
+
+Develop model that addresses relationship between views of civility and views of Trump. Do views about civility affect how democrats vs republicans view president differently?
+
+CIVIL2 = civility
+DTID = approval of Trump 
+PARTYID = need to convert to dummy variable equals 1 for republicans and 0 for non-republicans
+control other variables - no more than 2
+
+Use cross table to view distribution of PARTYID and approximate PARTYID values.
+```{r}
+library(gmodels)
+CrossTable(dta$PARTYID)
+```
+
+
+Use if else statement to create dummy column - if values in PARTYID are greater than 5, assign 1, else assign 0.
+```{r}
+dta$partyid_dummy <- ifelse(dta$PARTYID>5,1,0)
+```
+
+1. Initial difference of means test
+```{r}
+ols <- lm(dta$DTID ~ dta$partyid_dummy)
+summary(ols)
+```
+The coefficient on partyid_dummy above suggests a mean approval of 2.18851 units for non-Republicans. The model above indicates an increase of 1.58558 in approval units of President Trump associated with Republicans. The intercept combined with the partyid_dummy coefficient suggests the mean approval of President Trump is approximately 3.77409 units for Republicans.
+
+```{r}
+ols2 <- lm(dta$DTID ~ dta$partyid_dummy + dta$CIVIL2)
+summary(ols2)
+```
+

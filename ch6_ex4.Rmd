@@ -2,24 +2,50 @@
 title: "Chapter 6 Exercise 4"
 author: "Allen Church"
 date: "11/6/2019"
-output: html_document
+output:
+  word_document: default
+  html_document: default
 ---
 
 ```{r setup, include=TRUE, message = FALSE, warning = FALSE}
 require(knitr)
 require(haven)
-require(AER)
 
 opts_chunk$set(echo = TRUE)
 options(digits = 3)
 
-#Add working directory, assign data to lab variable
-load("/Users/allenchurch/Ch6_Exercise4_Speeding_tickets.RData")
-View(dta)
+load("Ch6_Exercise4_Speeding_tickets.RData")
 ```
 
 4a. Difference of means test to assess if fines for men and women are different. Do we have reason to expect endogeneity?
 ```{r}
-
+diff_means_ols <- lm(dta$Amount ~ dta$Female)
+summary(diff_means_ols)
 ```
+The results above indicate a predicted value of $124.66 fine for women. Beta 1 indicates that men (as the treatment group) are associated with a -7.939 decrease in fine amount. A t statistic of 11.8 and p value is approximately 0 indicates this is statistically significant. However, we may suspect endogeneity as the model does not account for race of the driver. Namely, the race of the driver may influence the ticket amount and can be correlated with whether the driver is male or female.
 
+4b. Difference of means test for men and women that controls for age and miles per hour. Do we have reason to expect endogeneity?
+```{r}
+diff_means_ols2 <- lm(dta$Amount ~ dta$Female + dta$Age + dta$MPHover)
+summary(diff_means_ols2)
+```
+After controlling for age and miles per hour, the model suggests that miles per hour is highly statistically significant with a t statistic of 177.67 and a p value of approximately 0. However, we may suspect endogeneity as the model does not account for type of car. Namely, the type of car (i.e. if it is an expensive sports car) can be correlated with the fine amount, whether the driver is male or female, age of the driver, and miles per hour over the speed limit.
+
+4c. Are fines higher for African Americans and Hispanics compared to everyone else? Explain what the coefficients on these variables mean?
+```{r}
+diff_means_ols3 <- lm(dta$Amount ~ dta$Female +  dta$Black + dta$Hispanic)
+summary(diff_means_ols3)
+```
+The coefficient for African Americans indicates an estimate of 6.25 increase in fine for tickets for African Americans. The t statistic of 4.34 indicates this is statistically significant. The coefficient for Hispanics indicates an estimate of $7.98 increase in fine for tickets for Hispanics The t statistic of 5.34 indicates this is statistically significant. The standard error on these coefficients measure how much Beta One Hat will vary.
+
+4d.
+The standard error for Female, Black, and Hispanic variables are 0.670, 1.441, and 1.496, respectively. The standard error for Black and Hispanic variables is higher because the variance of these coefficients are higher. Therefore, we have a less precise view for these two variables due to their increased error terms.
+
+4e. Within a single model, assess whether miles over speed limit has differential effect on fines for women, African Americans, and Hispanics
+```{r}
+dta$interact_black <- dta$Black * dta$MPHover
+dta$interact_hispanic <- dta$Hispanic * dta$MPHover
+diff_means_ols4 <- lm(dta$Amount ~ dta$Female + dta$MPHover + dta$interact_black + dta$interact_hispanic)
+summary(diff_means_ols4)
+```
+The coefficients above suggest MPH over has a positive differential effect for women, African Americans, and Hispanics. The coefficient for women and MPH over suggest that women are associated with a 12.74 dollars increase in ticket amount for each MPH over the speed limit. The coefficients suggest that African American men are associated with a 9.20 dollars increase in ticket amount for each MPH over the speed limit. The coefficients suggest that Hispanic men are associated with a 9.44 dollars increase in ticket amount for each MPH over the speed limit.
