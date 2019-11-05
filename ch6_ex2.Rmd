@@ -57,31 +57,27 @@ There is a -0.265 change in FFR associated with a 1 unit increase in the electio
 2b. ii. What change in FFR is associated with a 1 unit increase in election variable when president is democrat?
 There is a 0.558 change in FFR associated with a 1 unit increase in the election variable when the president is Democrat.
 
-
 2c. Is the effect of election statistically significant under republicans?
 ```{r}
 olsrepublican <- lm(rep_plot$FEDFUNDS ~ rep_plot$election)
 summary(olsrepublican)
 ```
 
-Is the effect of election statistically significant under democrats?
+Is the effect of election statistically significant under democrats? - filter for democrats
 ```{r}
 olsdemocrat <- lm(dem_plot$FEDFUNDS ~ dem_plot$election)
 summary(olsdemocrat)
 ```
 
-2d. Fitted lines for relationship between election and interest rates - Republicans.
+2d. Fitted lines for relationship between election and interest rates
 ```{r}
-plot(rep_plot$election, rep_plot$FEDFUNDS, main="Quarters and Federal Funds Rate: Republicans",
-     xlab="Quarters Since Previous Election", ylab = "FFR (%)", pch = 19, col='red')
-abline(lm(rep_plot$FEDFUNDS ~ rep_plot$election), col = 'blue')
-```
-
-Fitted lines for relationship between election and interest rates - Democrats.
-```{r}
-plot(dem_plot$election, dem_plot$FEDFUNDS, main="Quarters and Federal Funds Rate: Democrats",
-     xlab="Quarters Since Previous Election", ylab = "FFR (%)", pch = 19, col='blue')
-abline(lm(dem_plot$FEDFUNDS ~ dem_plot$election), col = 'red' )
+#View(dta)
+plot(dem_plot$election, dem_plot$FEDFUNDS, main="Quarters and Federal Funds Rate",
+     xlab="Quarters Since Previous Election", ylab = "FFR (%)", pch=19, col='blue')
+points(rep_plot$election, rep_plot$FEDFUNDS, pch=18, col='red')
+abline(lm(dem_plot$FEDFUNDS ~ dem_plot$election), col = 'blue')
+abline(lm(rep_plot$FEDFUNDS ~ rep_plot$election), col = 'red')
+legend("topleft", legend = c("Democrat", "Republican"), pch=c(19, 18), col=c("blue", "red"))
 ```
 
 2e. 
