@@ -67,7 +67,6 @@ summary(olsDemocrat)
 ```
 The coefficient on Quarters under Democrats is positive (0.293) with a t statistic of 4.58, implying it is statistically significant.
 
-
 2d. Fitted lines for relationship between Quarters and interest rates
 ```{r}
 plot(dem_plot$Quarters, dem_plot$FEDFUNDS, main="Quarters and Federal Funds Rate",
@@ -84,5 +83,4 @@ The fitted lines above imply that for Democratic presidents, the Federal Funds R
 olsinteraction_lag <- lm(dta$FEDFUNDS ~ dta$Democrat + dta$Quarters + dta$duminteract + dta$lag_FEDFUNDS + dta$inflation)
 summary(olsinteraction_lag)
 ```
-
 After incorporating lag_FEDFUNDS and inflation into the model above, the statistical significance of the previously included coefficients drops below 2. Specifically, the Democrat, Quarters, and duminteract coefficients change their t statistics to 0.46, 1.37, and 1.7, respectively. However, including the lag_FEDFUNDS coefficient indicates this is highly statistically significant, with a t statistic of 37.54. Interestingly, including inflation produces a t statistic of only 4.72, which while statistically significant, is not as significant as the lag_FEDFUNDS coefficient. Running the model with these included variables indicates that lagged effective federal funds rate and inflation rate have statistically significant - yet differing - effects on effective federal funds rate.
