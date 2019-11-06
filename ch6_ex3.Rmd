@@ -8,8 +8,8 @@ output:
 ---
 
 ```{r}
-library(readxl)
-dta <- read_excel("Battleground-65-Final-Dataset.xlsx")
+library(openxlsx)
+dta <- read.xlsx("Battleground-65-Final-Dataset.xlsx",1)
 #View(dta)
 ```
 
@@ -19,28 +19,29 @@ CIVIL2 = civility
 DTID = approval of Trump 
 PARTYID = need to convert to dummy variable equals 1 for republicans and 0 for non-republicans
 control other variables - no more than 2
-
-Use cross table to view distribution of PARTYID and approximate PARTYID values.
 ```{r}
-library(gmodels)
-CrossTable(dta$PARTYID)
+#Use if else statement to create dummy column - if values in PARTYID are greater than 3, assign 0, else assign 1
+dta$partyid_dummy <- ifelse(dta$PARTYID>3,0,1)
 ```
 
-
-Use if else statement to create dummy column - if values in PARTYID are greater than 5, assign 1, else assign 0.
+1. Initial difference of means test with dummy interaction
 ```{r}
-dta$partyid_dummy <- ifelse(dta$PARTYID>5,1,0)
-```
-
-1. Initial difference of means test
-```{r}
-ols <- lm(dta$DTID ~ dta$partyid_dummy)
+dta$duminteract <- dta$partyid_dummy * dta$CIVIL2
+ols <- lm(dta$DTID ~ dta$CIVIL2 + dta$partyid_dummy + dta$duminteract)
 summary(ols)
 ```
-The coefficient on partyid_dummy above suggests a mean approval of 2.18851 units for non-Republicans. The model above indicates an increase of 1.58558 in approval units of President Trump associated with Republicans. The intercept combined with the partyid_dummy coefficient suggests the mean approval of President Trump is approximately 3.77409 units for Republicans.
+The intercept in the initial model above suggests a mean approval of President Trump of 4.03826 units associated with non-Republicans. The model above indicates a decrease of 2.49107 in DTID units associated with Republicans. The intercept combined with the partyid_dummy coefficient suggests the mean DTID value of President Trump is approximately 1.54719 units for Republicans. The dummy interaction coefficient suggests that Republicans are associated with a -0.028 decrease in DTID units per a 1 unit increase in civility. Further, the model indicates that the coefficient partyid_dummy is statistically significant, with a t statistic of 26.095 and a p value of approximately 0, and that our dummy interaction variable is statistically significant with a t statistic of 3.971. 
 
+2. Difference of means test while controlling for 1 variable and restricting data to union members.
 ```{r}
-ols2 <- lm(dta$DTID ~ dta$partyid_dummy + dta$CIVIL2)
+ols2 <- lm(DTID ~ CIVIL2 + partyid_dummy + duminteract, data=dta[dta$UNION==1,])
 summary(ols2)
 ```
+The intercept in the model above suggests a mean approval of President Trump of 3.77624 units associated with non-Republican union members. The model above indicates a decrease of 2.44878 in DTID units associated with Republican union members - with a t statistic of 10.204 indicating statistical significance. The intercept combined with the partyid_dummy coefficient suggests the mean DTID value of President Trump is approximately 1.32746 units for Republican union members. The dummy interaction coefficient suggests that Republican union members are associated with a 0.05815 increase in DTID units per a 1 unit increase in civility, however a t statistic of 0.821 indicates this coefficient is not statistically significant.
 
+3. Difference of means test while controlling for economic class, and factoring this variable
+```{r}
+ols3 <- lm(dta$DTID ~ dta$CIVIL2 + dta$partyid_dummy + dta$duminteract + factor(dta$ECONCLA2))
+summary(ols3)
+```
+The intercept in the model above suggests a mean approval of President Trump of 4.37069 units associated with non-Republicans in the economic upper class, indicating statistical significance with a t statistic of 38.359. The model above indicates a decrease of 2.48235 in DTID units associated with Republicans in the economic upper class - with a t statistic of 26.060 indicating statistical significance. The intercept combined with the partyid_dummy coefficient suggests the mean DTID value of President Trump is approximately 1.88834 units for Republicans in the economic upper class. The dummy interaction coefficient suggests that Republicans in the economic upper class are associated with a -0.0298 decrease in DTID units per a 1 unit increase in civility, indicating statistical significance with a t statistic of 3.989. Further, controlling for economic class suggests that being a Democrat in the middle class is associated with 3.9791 increase in DTID units, with a t statistic of 3.761 indicating statistical significance.
