@@ -24,7 +24,9 @@ ppg_bond_dis <- ("DT.DIS.PBND.CD")
 #Fetch data from WB API, specifying country, indicator, start/end dates and put into dataframe
 bond_data_LAC <- wb(country = LAC, indicator = ppg_bond_dis, startdate = 2014, enddate = 2018, POSIXct = TRUE)
 df <- data.frame(bond_data_LAC)
-View(df)
+
+
+LAC_list <- c("ARG", "BRA", "COL", "CRI", "DOM", "ECU", "GTM", "HND", "MEX", "PRY")
 ```
 
 
@@ -66,7 +68,6 @@ ggplot(data = bond_export_df, mapping = aes(x=date, y=Values, color=indicator)) 
 
 List of LAC countries
 ```{r}
-LAC_list <- c("ARG", "BRA", "COL", "CRI", "DOM", "ECU", "GTM", "HND", "MEX", "PRY")
 
 #Fetch data from WB API, specifying country, indicator, start/end dates and put into dataframe
 bond_data_LAC_list <- wb(country = LAC_list, indicator = "DT.DIS.PBND.CD", startdate = 2014, enddate = 2018, POSIXct = TRUE)

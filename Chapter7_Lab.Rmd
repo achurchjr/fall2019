@@ -1,0 +1,105 @@
+---
+title: "Chapter 7 Lab"
+author: "Allen Church"
+date: "November 20, 2019"
+output:
+  word_document: default
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+## Preparation
+```{r setup, include=TRUE, message = FALSE, warning = FALSE}
+require(knitr)
+require(haven)
+require(car)
+require(AER)
+require(lm.beta)
+
+opts_chunk$set(echo = TRUE)
+options(digits = 6)
+
+setwd("C:/Users/WB537822/Desktop/stats1")
+load("Chapter7_lab.RData")
+```
+
+#### (a) Estimate a model for women predicting wages in 1996 as a function of height in 1985 and 1981, siblings and esteem from 1980.  Use standardized coefficients and report results.  How do the t statistics compare to t statistics in an unstandardized model? (You don't need to report the unstandardized results.)
+```{r tidy = FALSE}
+#Create two subsetted datasets for women and men, respectively
+dtawomen <- dta[dta$male == 0,]
+dtamen <- dta[dta$male == 1,]
+
+results_female_standardized <- lm(scale(dtawomen$wage96) ~ scale(dtawomen$height81) + scale(dtawomen$height85) + scale(dtawomen$siblings) + scale(dtawomen$esteem80))
+
+summary(results_female_standardized)
+```
+
+Estimating unstandardized model below:
+```{r tidy = FALSE}
+results_female_unstandardized <- lm(dtawomen$wage96 ~ dtawomen$height81 + dtawomen$height85 + dtawomen$siblings + dtawomen$esteem80)
+summary(results_female_unstandardized)
+```
+As seen in the standardized vs. unstandardized models above, the t statistics are the same (excluding the Intercept), at 0.23, 0.71, 2.66, and 3.04 for height81, height85, siblings, and esteem80, respectively. This reinforces that model fit is the same between standardized and unstandardized variables. The standardized model suggests that the only statistically significant coefficients in the model are siblings and esteem, with t statistics of 2.66 and 3.04, respectively. These results suggest that an increase in 1 standard deviation of siblings is associated with a decrease in -0.05066 standard deviations of wage. Also, the model suggests that an increase in 1 standard deviation of esteem is associated with an increase of 0.711 standard deviations of wage.
+
+#### (b) Add several covariates (your choice) to the above model, including dummy variables for race/ethnicity.  Use standardized coefficients as appropriate to each variable and briefly discuss effects, focusing on effect of race relative to the esteem variable (as an example of a continuous covariate).
+```{r tidy = FALSE}
+# Estimate regression models using scale command for continuous variables
+results2_female <- lm(scale(dtawomen$wage96) ~ scale(dtawomen$height85) + scale(dtawomen$height81) + scale(dtawomen$esteem80) + scale(dtawomen$siblings) + dtawomen$black + dtawomen$hispanic + scale(dtawomen$daded79)+ scale(dtawomen$momed79))
+summary(results2_female)
+```
+The model above suggests that, among coefficients included, esteem is the only one that is statistically signicicant. Compared to the model in (a) where an increase in 1 standard deviation of esteem was associated with an increase of 0.711 standard deviations of wage, the above model suggests that an increase in 1 standard deviation of esteem was associated with an increase of 0.04414 standard deviations of wage. The t statistics associated with the Black and Hispanic variables are 0.19 and 1.09, and associated coefficients are 0.01032 and 0.07275, respectively.
+
+#### (c) Models with wages often have logged variables in order to be able to provide results in percentage terms rather than absolute dollars.  Estimate a log-linear model for women.  To keep things simple, use only *height85*, *height81*, *esteem80*, *black* and *siblings* as the covariates.
+
+```{r tidy = FALSE}
+#Convert 0 values to NA
+dta$wage96.nona <- dta$wage96
+dta$wage96.nona[dta$wage96==0] <- NA
+
+results3_female <- lm(log(wage96.nona) ~ height85 + height81 + esteem80 + black + siblings, dta[dta$male == 0,])
+summary(results3_female)
+```
+The log-linear model above suggests that a 1 unit increase in esteem is associated with a 5% increase in wages for women, with a t statistic of 9.89. Also, the model suggests that being an African American woman is associated with a 16% decrease in wages, with a t statistic of 5.29. Lastly, the model suggests that an additional sibling is associated with a 3% decrease in wages for women, with a t statistic of 5.56.
+
+#### (d) Starting with the above model (for women only), create a model in which the effect of siblings is potentially non-linear via a quadratic equation.  Discuss the results and note the effect of siblings in general term and for specific cases when *siblings* equals 1 and when *siblings* equals 5. (For fun, estimate the same model for men.  You don't need to report or discuss those results.)
+```{r tidy = FALSE}
+dta$siblings_squared <- dta$siblings^2
+
+results4_female <- lm(log(wage96.nona) ~ height85 + height81 + esteem80 + black + siblings + siblings_squared, data=dta[dta$male==0,])
+
+summary(results4_female)
+```
+The above model suggests that an additional sibling, in general, is associated with a 6% drop in wages for women, with a t statistic of 4.39. In specific cases, when we add one sibling, this is associated with a 5% drop in wages for women (using the equation $\hat{B}Siblings + 2\hat{B}SiblingsSquared X$), or $-0.06512 + 2(0.00307 * 1)$. Additionally, five siblings is associated with a 3% drop in wages for women, using the previous equation, or $-0.06512 + 2(0.00307 * 5 = -0.03442)$.
+
+Estimating above sibling model for men:
+```{r tidy = FALSE}
+dta$siblings_squared <- dta$siblings^2
+
+results4_male <- lm(log(wage96.nona) ~ height85 + height81 + esteem80 + black + siblings + siblings_squared, data=dta[dta$male==1,])
+```
+
+#### (e) Estimate a model for women only in which the dependent variable is log of wages and the independent variables are *momed79*, *daded79*, *height85*, *height81*, *black* and *hispanic*.  Test the null hypothesis that the effect of mother's education is the same as the effect of father's education.  Report unrestricted and restricted models and then show the calculation of the F-statistic and explain the results.
+```{r tidy = FALSE}
+#Unrestricted model
+results_female5 <- lm(log(wage96.nona) ~ momed79 + daded79 + height85 + height81 + black + hispanic, data=dta[dta$male==0,])
+
+#Calculate F-statistic using car package
+library(car)
+linearHypothesis(results_female5, c("momed79 = daded79"))
+```
+
+```{r}
+#Restricting model by imposing the null that momed79 = daded79
+dta$MomDadEd = dta$momed79 + dta$daded79
+
+results_female5_restrict1 <- lm(log(wage96.nona) ~ MomDadEd + height85 + height81 + black + hispanic, data = dta[dta$male == 0,])
+
+#calculate F stat
+F.stat.top = ((summary(results_female5)$r.squared - summary(results_female5_restrict1)$r.squared)/1)
+F.stat.bottom = ((1-summary(results_female5)$r.squared)/(summary(results_female5)$df[2]))
+F.stat = F.stat.top/F.stat.bottom
+
+#Critical value for F-test
+qf(1-0.05, df1=1, df2= summary(results_female5)$df[2])
+```
+Conducting an $F$ test above produces an $F$ statistic of 0.238, which is based on $R^2$ values from estimating an unrestricted model and estimating a restricted model. The unrestricted model is the full model that includes logged wages as the dependent variable and momed79, daded79, height85, height81, black, and hispanic as independent variables. The restricted model imposes the restriction that the null hypothesis is true - in this case, the null posits that the mother's education carries the same effect as the father's education. The $f$ statistic above of 0.238 is lower than the critical value from the $F$ test of 3.84507, meaning that we cannot reject the null. Lastly, the p value above of 0.626 indicates that we cannot reject the null, as it suggests a 0.626 probability of observing these results under the null.
